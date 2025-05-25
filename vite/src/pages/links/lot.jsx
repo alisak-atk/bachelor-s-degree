@@ -12,7 +12,6 @@ const DonationLot = () => {
     const startAmount = Number(from) || 0;
     const totalAmount = Number(to) || 1000000;
 
-    
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -39,25 +38,52 @@ const DonationLot = () => {
     }, [userid, navigate]);
 
     const parseDate = (dateStr) => {
-        const [day, month, year] = dateStr.split("-");
-        return new Date(`${month}-${day}-${year}`);
+        if (!dateStr || !/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+            return null;
+        }
+
+        const [day, month, year] = dateStr.split("-").map(Number);
+        const date = new Date(year, month - 1, day);
+
+        if (
+            date.getFullYear() !== year ||
+            date.getMonth() !== month - 1 ||
+            date.getDate() !== day
+        ) {
+            return null;
+        }
+
+        return date;
     };
 
     useEffect(() => {
         const start = parseInt(from);
         const goal = parseInt(to);
-      
-        if (start >= goal) {
-          Swal.fire({
-            title: "ຜິດພາດ",
-            text: "ຄ່າເລີ່ມຕົ້ນຕ້ອງນ້ອຍກວ່າເປົ້າໝາຍ",
-            icon: "error",
-            confirmButtonText: "ຕົກລົງ",
-          }).then(() => {
-            navigate("/");
-          });
+
+
+        if (isNaN(start) || isNaN(goal)) {
+            Swal.fire({
+                title: "ຜິດພາດ",
+                text: "ຂໍ້ມູນຈຳນວນບໍ່ຖືກຕ້ອງ",
+                icon: "error",
+                confirmButtonText: "ຕົກລົງ",
+            }).then(() => {
+                navigate("/");
+            });
+            return;
         }
-      }, [from, to, navigate]);
+
+        if (start >= goal) {
+            Swal.fire({
+                title: "ຜິດພາດ",
+                text: "ຄ່າເລີ່ມຕົ້ນຕ້ອງນ້ອຍກວ່າເປົ້າໝາຍ",
+                icon: "error",
+                confirmButtonText: "ຕົກລົງ",
+            }).then(() => {
+                navigate("/");
+            });
+        }
+    }, [from, to, navigate]);
 
     useEffect(() => {
         if (!timestart || !timeend) return;
@@ -65,36 +91,53 @@ const DonationLot = () => {
         const startDate = parseDate(timestart);
         const endDate = parseDate(timeend);
 
+        if (!startDate || !endDate) {
+            Swal.fire({
+                title: "ຜິດພາດ",
+                text: "ຂໍ້ມູນວັນທີບໍ່ຖືກຕ້ອງ",
+                icon: "error",
+                confirmButtonText: "ຕົກລົງ",
+            }).then(() => {
+                navigate("/");
+            });
+            return;
+        }
+
+
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(0, 0, 0, 0);
 
         const calculateTimeLeft = () => {
             const now = new Date();
             now.setHours(0, 0, 0, 0);
-            const timeDifference = endDate - now;
 
-            if (timeDifference <= 0) {
-                setTimeLeft("ໄລຍະເວລາໄດ້ສິ້ນສຸດແລ້ວ.");
+            const timeDifference = endDate.getTime() - now.getTime();
+            const dayDiff = Math.abs(Math.floor(timeDifference / (1000 * 60 * 60 * 24)));
+
+            if (timeDifference > 0) {
+
+                setTimeLeft(`${dayDiff} ມື້`);
+            } else if (timeDifference < 0) {
+
+                setTimeLeft(`${dayDiff} ມື້ຜ່ານມາ`);
             } else {
-                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-
-                setTimeLeft(`${days} ມື້`);
+                setTimeLeft("ມຶ້ນີ້");
             }
         };
 
-        calculateTimeLeft(); 
-        const intervalId = setInterval(calculateTimeLeft, 6000000); 
+        calculateTimeLeft();
+        const intervalId = setInterval(calculateTimeLeft, 6000000);
 
         return () => clearInterval(intervalId);
     }, [timestart, timeend]);
 
 
 
-    
+
     useEffect(() => {
         if (!id) return;
 
-        
+
         const fetchDonationAmount = async () => {
             try {
                 const res = await fetch(
@@ -117,13 +160,13 @@ const DonationLot = () => {
         return () => clearInterval(intervalId);
     }, [id, timestart, timeend]);
 
-    const percentage = Math.min((donationAmount / totalAmount) * 100, 100);
+    const percentage = donationAmount / totalAmount * 100;
 
     return (
         <div className="show-container">
             <div className="progress" id="progressBar">
                 <div className="progress-text font-lao" id="progressText">
-                    {donationAmount.toLocaleString()} ກີບ ({percentage.toFixed(1)}%)
+                    {donationAmount.toLocaleString()} ກີບ ({percentage.toFixed(2)}%)
                 </div>
                 <div className="rounded">
                     <div

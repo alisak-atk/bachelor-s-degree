@@ -41,11 +41,12 @@ router.get("/total", async (req, res) => {
     
     const withdrawQuery = {
       userID: userId,
-      status: { $in: ["pending", "approved", "rejected"] },
+      status: { $in: ["pending", "approved"] },
     };
 
     const requestQuery = {
       userID: userId,
+      status: { $in: ["pending", "approved", "rejected"] },
     };
 
     if (startDate && endDate) {
@@ -57,12 +58,21 @@ router.get("/total", async (req, res) => {
       "amount"
     );
 
+    const requests = await WithdrawRequest.find(requestQuery).select(
+      "amount"
+    );
+    
+    const totalrequests = requests.reduce(
+      (total, request) => total + Math.floor(request.amount),
+      0
+    );
+
     const totalWithdrawals = withdrawals.reduce(
       (total, request) => total + Math.floor(request.amount),
       0
     );
 
-    const withdrawalCount = totalWithdrawals;
+    const withdrawalCount = totalrequests;
 
     const remainingAmount = Math.floor(
       totalDonationsAfterTax - totalWithdrawals

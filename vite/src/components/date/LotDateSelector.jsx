@@ -15,7 +15,7 @@ const LotDateSelector = ({ baseLotPath, onGenerate }) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return current && current < today;
+    return current && current.toDate() <= today;
   };
 
 
