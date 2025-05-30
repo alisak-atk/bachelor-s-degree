@@ -2,6 +2,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import { registerNotoSansLao } from "@/assets/fonts/NotoSansLao-Regular";
+import { registerSarabun } from "@/assets/fonts/Sarabun-Regular";
+
 import Papa from "papaparse";
 
 import ExcelJS from "exceljs";
@@ -117,6 +119,10 @@ export const exportToPDF = (filteredSearchData, reportType) => {
   doc.addFont("NotoSansLao-Regular.ttf", "NotoSansLao-Regular", "normal");
   doc.setFont("NotoSansLao-Regular");
 
+  registerSarabun(doc);
+  doc.addFont("Sarabun-Regular.ttf", "Sarabun-Regular", "normal");
+  doc.setFont("Sarabun-Regular");
+
   const now = new Date();
   const formattedDate = now.toLocaleDateString("en-GB").split("/").join("-");
 
@@ -147,23 +153,33 @@ export const exportToPDF = (filteredSearchData, reportType) => {
 
   }
 
-  doc.setFontSize(16);
-  doc.text("ລາຍງານຂໍ້ມູນ", 14, 20);
-
   autoTable(doc, {
-    startY: 30,
     head: [headers],
     body: rows,
     styles: {
-      font: "NotoSansLao-Regular",
-      fontSize: 10,
+      fontSize: 9,
       fontStyle: "normal",
     },
     headStyles: {
       fillColor: [220, 220, 220],
+      textColor: [0, 0, 0],
       fontStyle: "normal",
     },
     margin: { left: 14, right: 14 },
+
+    didParseCell: function (data) {
+      const text = data.cell.text.join('');
+      const laoRegex = /[\u0E80-\u0EFF]/;
+      const thaiRegex = /[\u0E00-\u0E7F]/;
+
+      if (laoRegex.test(text)) {
+        data.cell.styles.font = "NotoSansLao-Regular";
+      } else if (thaiRegex.test(text)) {
+        data.cell.styles.font = "Sarabun-Regular";
+      } else {
+        data.cell.styles.font = "helvetica";
+      }
+    }
   });
 
 
@@ -434,7 +450,7 @@ export const exportToPDFAdmin = (filteredSearchData, reportType) => {
     headStyles: {
       fillColor: [220, 220, 220],
       textColor: [0, 0, 0],
-      fontStyle: "normal",     
+      fontStyle: "normal",
     },
     margin: { left: 14, right: 14 },
 

@@ -34,14 +34,13 @@ const ReportUserTable = () => {
         try {
             setLoading(true);
 
-            
             const res = await fetch(
                 `${apiUrl}/report/user?type=${type}&id=${userId}`,
                 { credentials: "include" }
             );
             const result = await res.json();
             setData(result.data || []);
-            setFilteredData(result.data || []); 
+            setFilteredData(result.data || []);
         } catch (err) {
             console.error("Fetch error:", err);
             message.error("Failed to fetch report");
@@ -50,15 +49,15 @@ const ReportUserTable = () => {
         }
     };
 
-    
+
     useEffect(() => {
         fetchReport(reportType, user.id);
     }, [reportType, user]);
 
-    
+
     const filterData = () => {
         if (!dateRange[0] || !dateRange[1]) {
-            setFilteredData(data); 
+            setFilteredData(data);
             return;
         }
 
@@ -70,7 +69,7 @@ const ReportUserTable = () => {
 
             let isInDateRange = false;
 
-            
+
             if (reportType === "donation") {
                 if (item.dateTime) {
                     const itemDate = dayjs(item.dateTime, "DD/MM/YYYY HH:mm:ss");
@@ -95,7 +94,7 @@ const ReportUserTable = () => {
     };
 
     useEffect(() => {
-        filterData(); 
+        filterData();
     }, [dateRange, data]);
 
     const handleDateRangeChange = (dates) => {
@@ -220,7 +219,7 @@ const ReportUserTable = () => {
             </div>
 
             <div className="flex justify-end mb-4">
-                <Button  onClick={() => handlePrint()} icon={<PrinterFilled />} color="pink" variant="outlined" size="small">
+                <Button onClick={() => handlePrint()} icon={<PrinterFilled />} color="pink" variant="outlined" size="small">
                     Print
                 </Button>
                 <Button onClick={() => exportToPDF(filteredSearchData, reportType)} className="ml-2" icon={<FilePdfFilled />} color="red" variant="outlined" size="small">
@@ -234,7 +233,7 @@ const ReportUserTable = () => {
             </div>
 
 
-            <div ref={componentRef}>
+            <div>
                 <div className="overflow-x-auto">
                     <Table
                         dataSource={currentData}
@@ -245,6 +244,18 @@ const ReportUserTable = () => {
                         size="small"
                         className="w-full"
                     />
+                </div>
+                <div style={{ display: "none" }}>
+                    <div ref={componentRef}>
+                        <Table
+                            dataSource={filteredSearchData.map((item, index) => ({ ...item, key: index + 1 }))}
+                            columns={reportType === "donation" ? donationColumns : withdrawColumns}
+                            rowKey={(record) => record._id}
+                            pagination={false}
+                            size="small"
+                            className="w-full"
+                        />
+                    </div>
                 </div>
             </div>
 

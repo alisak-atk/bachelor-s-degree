@@ -9,7 +9,7 @@ const HomeLayout = ({children}) => {
             <>
                 <Layout>
                     <HomeNavbar />
-                    <Content style={{ minHeight: "100%" }} className="dark:text-white md:p-4" >
+                    <Content style={{ minHeight: "100%" }} className="dark:text-white" >
                         {children}
                     </Content>
                 </Layout>

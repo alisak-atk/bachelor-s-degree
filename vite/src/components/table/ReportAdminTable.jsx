@@ -319,7 +319,7 @@ const ReportAdminTable = () => {
 
             </div>
 
-            <div ref={componentRef}>
+            <div>
                 <div className="overflow-x-auto">
                     <Table
                         dataSource={currentData}
@@ -330,6 +330,18 @@ const ReportAdminTable = () => {
                         size="small"
                         className="w-full"
                     />
+                </div>
+                <div style={{ display: "none" }}>
+                    <div ref={componentRef}>
+                        <Table
+                            dataSource={filteredSearchData.map((item, index) => ({ ...item, key: index + 1 }))}
+                            columns={columnsMap[reportType]}
+                            rowKey={(record) => record._id}
+                            pagination={false}
+                            size="small"
+                            className="w-full"
+                        />
+                    </div>
                 </div>
             </div>
 
